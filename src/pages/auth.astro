@@ -1,0 +1,76 @@
+---
+// This page handles the OpenAuth UI
+---
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Committee Login - MMS PPG</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: linear-gradient(135deg, #5B9085 0%, #529F44 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .auth-container {
+        background: white;
+        border-radius: 1rem;
+        padding: 3rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        width: 90%;
+      }
+      
+      .logo {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 2rem;
+        background: linear-gradient(135deg, #5B9085, #529F44);
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .logo svg {
+        width: 32px;
+        height: 32px;
+        color: white;
+      }
+      
+      h1 {
+        text-align: center;
+        color: #596175;
+        margin: 0 0 0.5rem;
+        font-size: 1.75rem;
+      }
+      
+      .subtitle {
+        text-align: center;
+        color: #305A65;
+        margin: 0 0 2rem;
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-container">
+      <div class="logo">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      </div>
+      <h1>Committee Access</h1>
+      <p class="subtitle">MMS PPG Committee Portal</p>
+      
+      <!-- OpenAuth will inject its UI here -->
+      <div id="openauth-root"></div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,148 @@
+---
+// Check if already logged in
+const authCookie = Astro.cookies.get("committee_auth");
+if (authCookie) {
+  return Astro.redirect("/");
+}
+
+let error = "";
+let step: "email" | "code" = "email";
+let email = "";
+
+if (Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  const action = formData.get("action");
+  
+  if (action === "send_code") {
+    email = formData.get("email")?.toString() || "";
+    // In production, send actual email with code
+    // For now, we'll use a simple approach
+    step = "code";
+  } else if (action === "verify_code") {
+    email = formData.get("email")?.toString() || "";
+    const code = formData.get("code")?.toString() || "";
+    
+    // Simple verification (in production, verify against stored code)
+    // For demo: code is "123456"
+    if (code === "123456") {
+      // Set auth cookie
+      Astro.cookies.set("committee_auth", JSON.stringify({ email }), {
+        path: "/",
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+      });
+      return Astro.redirect("/");
+    } else {
+      error = "Invalid code. Please try again.";
+      step = "code";
+    }
+  }
+}
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Committee Login - MMS PPG</title>
+  </head>
+  <body class="bg-gradient-to-br from-[#5B9085] to-[#529F44] min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+      <!-- Logo -->
+      <div class="w-16 h-16 mx-auto mb-6 rounded-xl bg-gradient-to-br from-[#5B9085] to-[#529F44] flex items-center justify-center shadow-lg">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      </div>
+
+      <h1 class="text-3xl font-bold text-[#596175] text-center mb-2">Committee Portal</h1>
+      <p class="text-[#305A65] text-center mb-8">MMS PPG Committee Access</p>
+
+      {error && (
+        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+          {error}
+        </div>
+      )}
+
+      {step === "email" ? (
+        <form method="POST">
+          <input type="hidden" name="action" value="send_code" />
+          
+          <div class="mb-6">
+            <label for="email" class="block text-sm font-semibold text-[#596175] mb-2">
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              class="w-full px-4 py-3 border border-[#5B9085]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B9085] focus:border-transparent"
+              placeholder="your.email@example.com"
+            />
+            <p class="mt-2 text-xs text-[#305A65]/70">
+              Enter your authorized committee email address
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full bg-gradient-to-r from-[#5B9085] to-[#529F44] text-white font-semibold py-3 px-6 rounded-lg hover:shadow-lg transition-all duration-300"
+          >
+            Send Verification Code
+          </button>
+
+          <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+            <strong>Demo Mode:</strong> Click "Send Verification Code" and use code: <strong>123456</strong>
+          </div>
+        </form>
+      ) : (
+        <form method="POST">
+          <input type="hidden" name="action" value="verify_code" />
+          <input type="hidden" name="email" value={email} />
+          
+          <div class="mb-4 p-3 bg-[#5B9085]/10 rounded-lg">
+            <p class="text-sm text-[#305A65]">
+              Code sent to: <strong class="text-[#596175]">{email}</strong>
+            </p>
+          </div>
+
+          <div class="mb-6">
+            <label for="code" class="block text-sm font-semibold text-[#596175] mb-2">
+              Verification Code
+            </label>
+            <input
+              type="text"
+              id="code"
+              name="code"
+              required
+              maxlength="6"
+              class="w-full px-4 py-3 border border-[#5B9085]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5B9085] focus:border-transparent text-center text-2xl font-mono tracking-widest"
+              placeholder="000000"
+            />
+          </div>
+
+          <button
+            type="submit"
+            class="w-full bg-gradient-to-r from-[#5B9085] to-[#529F44] text-white font-semibold py-3 px-6 rounded-lg hover:shadow-lg transition-all duration-300 mb-3"
+          >
+            Verify & Login
+          </button>
+
+          <a
+            href="/login"
+            class="block text-center text-sm text-[#5B9085] hover:text-[#529F44] transition-colors"
+          >
+            ← Use different email
+          </a>
+        </form>
+      )}
+
+      <div class="mt-8 pt-6 border-t border-[#596175]/10 text-center text-xs text-[#305A65]/70">
+        Authorized committee members only
+      </div>
+    </div>
+  </body>
+</html>

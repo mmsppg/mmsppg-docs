@@ -13,7 +13,8 @@
     "@astrojs/cloudflare": "^12.6.9",
     "@directus/sdk": "^20.1.0",
     "@tailwindcss/vite": "^4.1.13",
-    "astro": "^5.14.1"
+    "astro": "^5.14.1",
+    "resend": "^6.1.2"
   },
   "devDependencies": {
     "@astrojs/tailwind": "^6.0.2",
