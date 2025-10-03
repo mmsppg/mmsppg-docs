@@ -52,19 +52,25 @@ export async function getContacts() {
 }
 
 export async function getMembers() {
-  const response = await directus.request(
-    readItems('members', {
-      fields: [
-        'id',
-        'first_name',
-        'last_name',
-        'committee_role_id.committee_role'
-      ],
-      sort: ['committee_role_id.committee_role', 'last_name']
-    })
-  );
-  console.log("Members response:", JSON.stringify(response, null, 2));
-  return response;
+  try {
+    const response = await directus.request(
+      readItems('members', {
+        fields: [
+          'id',
+          'first_name',
+          'last_name',
+          'committee_role_id.committee_role',
+          'committee_role_id.id'
+        ],
+        sort: ['last_name']
+      })
+    );
+    console.log("Members response:", JSON.stringify(response, null, 2));
+    return response || [];
+  } catch (error) {
+    console.error("Error fetching members:", error);
+    throw error;
+  }
 }
 
 export async function getGlobals() {

@@ -2,20 +2,28 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getMembers } from '../lib/directus';
 
-const membersResponse = await getMembers();
-const members = Array.isArray(membersResponse) ? membersResponse : membersResponse.data || [];
+let members = [];
+let error = null;
+
+try {
+  members = await getMembers();
+  console.log("Members data:", JSON.stringify(members, null, 2));
+} catch (e) {
+  error = e.message;
+  console.error("Error loading members:", e);
+}
 
 // Group members by role
 const membersByRole = members.reduce((acc, member) => {
-  const role = Array.isArray(member.committee_role_id) && member.committee_role_id.length > 0
-    ? member.committee_role_id[0].committee_role
-    : 'Other Members';
-  if (!acc[role]) acc[role] = [];
+  const role = member.committee_role_id?.committee_role || 'Other Members';
+  if (!acc[role]) {
+    acc[role] = [];
+  }
   acc[role].push(member);
   return acc;
 }, {});
 
-// Define role order for display
+// Define role order for display (customize as needed)
 const roleOrder = ['Chair', 'Vice Chair', 'Secretary', 'Treasurer'];
 const sortedRoles = Object.keys(membersByRole).sort((a, b) => {
   const aIndex = roleOrder.indexOf(a);
@@ -26,7 +34,6 @@ const sortedRoles = Object.keys(membersByRole).sort((a, b) => {
   return a.localeCompare(b);
 });
 ---
-
 <BaseLayout>
   <div class="relative">
     <!-- Header -->
@@ -57,7 +64,10 @@ const sortedRoles = Object.keys(membersByRole).sort((a, b) => {
     ) : (
       <div class="space-y-12">
         {sortedRoles.map((role, roleIndex) => (
-          <div key={role} style={`animation: fadeIn 0.6s ease-out ${roleIndex * 0.2}s both;`}>
+          <div 
+            key={role}
+            style={`animation: fadeIn 0.6s ease-out ${roleIndex * 0.2}s both;`}
+          >
             <!-- Role Header -->
             <div class="flex items-center gap-4 mb-6">
               <div class="h-1 w-12 bg-gradient-to-r from-[#5B9085] to-[#529F44] rounded-full"></div>
@@ -71,16 +81,31 @@ const sortedRoles = Object.keys(membersByRole).sort((a, b) => {
             <!-- Members Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {membersByRole[role].map((member, index) => (
-                <div key={member.id} class="group relative bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-[#5B9085]/10 hover:border-[#5B9085]/30 hover:-translate-y-1" style={`animation: slideInUp 0.5s ease-out ${(roleIndex * 0.2) + (index * 0.1)}s both;`}>
+                <div
+                  key={member.id}
+                  class="group relative bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-[#5B9085]/10 hover:border-[#5B9085]/30 hover:-translate-y-1"
+                  style={`animation: slideInUp 0.5s ease-out ${(roleIndex * 0.2) + (index * 0.1)}s both;`}
+                >
+                  <!-- Decorative corner -->
                   <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-[#5B9085]/5 to-transparent rounded-bl-full rounded-tr-xl"></div>
+                  
+                  <!-- Avatar -->
                   <div class="relative mb-4">
                     <div class="w-14 h-14 rounded-full bg-gradient-to-br from-[#5B9085] to-[#529F44] flex items-center justify-center text-white text-lg font-bold shadow-md group-hover:scale-110 transition-transform duration-300">
-                      {member.firstname[0]}{member.lastname[0]}
+                      {member.first_name[0]}{member.last_name[0]}
                     </div>
                     <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-[#529F44] rounded-full border-2 border-white"></div>
                   </div>
-                  <h4 class="text-lg font-bold text-[#596175] group-hover:text-[#5B9085] transition-colors mb-1">{member.firstname} {member.lastname}</h4>
-                  <div class="inline-block px-2 py-0.5 bg-[#529F44]/10 rounded text-xs font-medium text-[#529F44]">{role}</div>
+
+                  <!-- Name -->
+                  <h4 class="text-lg font-bold text-[#596175] group-hover:text-[#5B9085] transition-colors mb-1">
+                    {member.first_name} {member.last_name}
+                  </h4>
+
+                  <!-- Role badge -->
+                  <div class="inline-block px-2 py-0.5 bg-[#529F44]/10 rounded text-xs font-medium text-[#529F44]">
+                    {role}
+                  </div>
                 </div>
               ))}
             </div>
@@ -93,11 +118,22 @@ const sortedRoles = Object.keys(membersByRole).sort((a, b) => {
 
 <style>
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
+
   @keyframes slideInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>
