@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout>
+  <div class="relative py-12 px-4 sm:px-6 lg:px-8">
+    <!-- Header Section -->
+    <div class="relative mb-12 pb-8 border-b-2 border-[#5B9085]/20">
+      <div class="absolute inset-0 bg-gradient-to-r from-[#5B9085]/5 to-[#529F44]/5 rounded-2xl -z-10"></div>
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#5B9085] to-[#529F44] flex items-center justify-center shadow-lg">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-4xl sm:text-5xl font-bold text-[#596175] tracking-tight">Welcome to MMS PPG Committee</h2>
+          <p class="text-lg text-[#305A65]/70 mt-2">Your central repository for committee documents, agendas, and contacts.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="space-y-6 max-w-3xl text-[#305A65]">
+      <p class="text-base sm:text-lg leading-relaxed">
+        Here you can access all key documents, meeting agendas, and contact information for committee members. The site is designed to help you stay informed and collaborate effectively.
+      </p>
+      <p class="text-base sm:text-lg leading-relaxed">
+        Use the navigation menu to browse different sections or search for specific information. Make sure to check for updates regularly to stay up to date with the latest committee activities.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

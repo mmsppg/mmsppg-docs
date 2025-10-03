@@ -1,0 +1,10 @@
+name = "mms-ppg-committee"
+compatibility_date = "2025-10-03"
+pages_build_output_dir = "./dist"
+
+[env.production]
+name = "mms-ppg-committee"
+
+# Environment variables (these should be set in Cloudflare dashboard)
+# DIRECTUS_URL
+# DIRECTUS_TOKEN

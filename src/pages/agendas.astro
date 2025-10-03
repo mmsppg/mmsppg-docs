@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getAgendas } from '../lib/directus';
+
+const agendasResponse = await getAgendas();
+const agendas = agendasResponse.data || [];
+---
+
+<BaseLayout>
+  <div class="relative py-12 px-4 sm:px-6 lg:px-8">
+    <!-- Header Section -->
+    <div class="relative mb-12 pb-8 border-b-2 border-[#5B9085]/20">
+      <div class="absolute inset-0 bg-gradient-to-r from-[#5B9085]/5 to-[#529F44]/5 rounded-2xl -z-10"></div>
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#5B9085] to-[#529F44] flex items-center justify-center shadow-lg">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m12 3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-4xl sm:text-5xl font-bold text-[#596175] tracking-tight">Committee Agendas</h2>
+          <p class="text-lg text-[#305A65]/70 mt-2">View all upcoming and past meeting agendas</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agendas List -->
+    {agendas.length === 0 ? (
+      <div class="flex flex-col items-center justify-center py-20 px-4">
+        <div class="w-20 h-20 bg-[#5B9085]/10 rounded-full flex items-center justify-center mb-6">
+          <svg class="w-10 h-10 text-[#5B9085]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m12 3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <p class="text-xl text-[#305A65] font-medium">No agendas available yet.</p>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {agendas.map(agenda => (
+          <div class="group relative bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-[#5B9085]/10 hover:border-[#5B9085]/30 hover:-translate-y-1">
+            <div class="mb-3">
+              <h3 class="text-lg font-bold text-[#596175] group-hover:text-[#5B9085] transition-colors">{agenda.title}</h3>
+              <p class="text-sm text-[#305A65]/70 mt-1">Date: {agenda.meeting_date}</p>
+            </div>
+            <p class="text-[#305A65] text-sm leading-relaxed">{agenda.notes}</p>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+</BaseLayout>

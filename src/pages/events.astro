@@ -1,0 +1,165 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getEvents } from '../lib/directus';
+
+let events = [];
+let error = null;
+
+try {
+  events = await getEvents();
+  // Sort events by date if we have them
+  if (events && events.length > 0) {
+    events = events.sort((a, b) => {
+      try {
+        return new Date(a.date) - new Date(b.date);
+      } catch {
+        return 0;
+      }
+    });
+  }
+} catch (e) {
+  error = e.message;
+  console.error("Error loading events:", e);
+}
+---
+<BaseLayout>
+  <div class="relative">
+    <!-- Animated background decoration -->
+    <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#5B9085]/10 to-[#529F44]/10 rounded-full blur-3xl -z-10"></div>
+    
+    <!-- Header -->
+    <div class="relative mb-12">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-2 h-16 bg-gradient-to-b from-[#5B9085] to-[#529F44] rounded-full"></div>
+        <div>
+          <h2 class="text-5xl font-bold text-[#596175] tracking-tight">Upcoming Events</h2>
+          <p class="text-lg text-[#305A65]/70 mt-2">Stay connected with our community activities</p>
+        </div>
+      </div>
+    </div>
+
+    {error ? (
+      <div class="relative overflow-hidden rounded-3xl bg-red-50 p-12 text-center border border-red-200">
+        <p class="text-red-600">Error loading events: {error}</p>
+      </div>
+    ) : events.length === 0 ? (
+      <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#EDF0ED] to-white p-12 text-center border border-[#5B9085]/20">
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#5B9085] via-[#529F44] to-[#5B9085]"></div>
+        <div class="max-w-md mx-auto">
+          <div class="w-24 h-24 bg-gradient-to-br from-[#5B9085] to-[#529F44] rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg">
+            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold text-[#596175] mb-3">No Events Scheduled</h3>
+          <p class="text-[#305A65]">Check back soon for upcoming community events and activities.</p>
+        </div>
+      </div>
+    ) : (
+      <div class="space-y-6">
+        {events.map((event, index) => {
+          // Safely format date
+          let month = '', day = '', year = '', isUpcoming = false;
+          try {
+            const eventDate = new Date(event.date);
+            month = eventDate.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase();
+            day = eventDate.getDate();
+            year = eventDate.getFullYear();
+            isUpcoming = eventDate >= new Date();
+          } catch (e) {
+            month = 'TBD';
+            day = '';
+            year = '';
+          }
+          
+          return (
+            <div 
+              key={event.id}
+              class="group relative overflow-hidden rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-500 border border-[#5B9085]/20 hover:border-[#5B9085]/40"
+              style={`animation: slideInLeft 0.6s ease-out ${index * 0.15}s both;`}
+            >
+              <!-- Gradient accent bar -->
+              <div class="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-[#5B9085] to-[#529F44] group-hover:w-3 transition-all duration-300"></div>
+              
+              <div class="flex flex-col md:flex-row">
+                <!-- Date Badge -->
+                <div class="md:w-48 flex-shrink-0 p-8 bg-gradient-to-br from-[#5B9085] to-[#529F44] text-white relative overflow-hidden">
+                  <div class="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300"></div>
+                  <div class="relative z-10 text-center">
+                    {month && <div class="text-sm font-semibold mb-2 opacity-90">{month}</div>}
+                    {day && <div class="text-6xl font-bold mb-1">{day}</div>}
+                    {year && <div class="text-lg font-medium opacity-90">{year}</div>}
+                    {!month && <div class="text-2xl font-bold">{event.date}</div>}
+                    {isUpcoming && (
+                      <div class="mt-4 inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold">
+                        UPCOMING
+                      </div>
+                    )}
+                  </div>
+                  
+                  <!-- Decorative circles -->
+                  <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-white/10 rounded-full"></div>
+                  <div class="absolute -top-8 -left-8 w-32 h-32 bg-white/10 rounded-full"></div>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-1 p-8">
+                  <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                    <div class="flex-1">
+                      <h3 class="text-3xl font-bold text-[#596175] mb-3 group-hover:text-[#5B9085] transition-colors">
+                        {event.title}
+                      </h3>
+                      
+                      {event.location && (
+                        <div class="flex flex-wrap items-center gap-4 text-[#305A65] mb-4">
+                          <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-[#5B9085]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span class="font-medium">{event.location}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {event.description && (
+                    <div class="prose prose-sm max-w-none">
+                      <p class="text-[#305A65] leading-relaxed text-base">
+                        {event.description}
+                      </p>
+                    </div>
+                  )}
+
+                  <!-- Action footer -->
+                  <div class="mt-6 pt-6 border-t border-[#596175]/10 flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-sm text-[#5B9085] font-medium">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>More details coming soon</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+</style>
