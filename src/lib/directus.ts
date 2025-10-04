@@ -16,23 +16,38 @@ export async function getEvents() {
 }
 
 export async function getAgendas() {
-  const response = await directus.request(
-    readItems('agendas', {
-      fields: [
-        'id',
-        'meeting_date',
-        'agenda_id',
-        'category',
-        'agenda_items.id',
-        'agenda_items.order',
-        'agenda_items.topic',
-        'agenda_items.description'
-      ],
-      sort: ['-meeting_date']
-    })
-  );
-  console.log("Agendas response:", JSON.stringify(response, null, 2));
-  return response;
+  try {
+    const response = await directus.request(
+      readItems('agendas', {
+        fields: [
+          'id',
+          'meeting_date',
+          'category',
+          'title',
+          'notes',
+          {
+            'agenda_items': [
+              'id',
+              { 'agenda_items_id': ['id', 'order', 'topic', 'description'] }
+            ]
+          }
+        ],
+        sort: ['-meeting_date']
+      })
+    );
+    
+    // Transform the M2M structure - flatten the junction table
+    const transformed = response.map((agenda: any) => ({
+      ...agenda,
+      agenda_items: agenda.agenda_items?.map((junction: any) => junction.agenda_items_id).filter(Boolean) || []
+    }));
+    
+    console.log("Agendas transformed:", JSON.stringify(transformed, null, 2));
+    return transformed || [];
+  } catch (error) {
+    console.error("Error fetching agendas:", error);
+    return [];
+  }
 }
 
 export async function getContacts() {
