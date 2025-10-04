@@ -1,33 +1,129 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getGlobals } from '../lib/directus';
+
+const globals = await getGlobals();
+const siteInfo = globals[0] || { site_title: "MMS PPG Committee" };
 ---
 
 <BaseLayout>
-  <div class="relative py-12 px-4 sm:px-6 lg:px-8">
-    <!-- Header Section -->
-    <div class="relative mb-12 pb-8 border-b-2 border-[#5B9085]/20">
-      <div class="absolute inset-0 bg-gradient-to-r from-[#5B9085]/5 to-[#529F44]/5 rounded-2xl -z-10"></div>
-      <div class="flex items-center gap-4 mb-4">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#5B9085] to-[#529F44] flex items-center justify-center shadow-lg">
-          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div class="relative">
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#5B9085] to-[#529F44] p-12 md:p-16 mb-12 text-white">
+      <div class="absolute inset-0 bg-black/10"></div>
+      <div class="relative z-10 max-w-3xl">
+        <h1 class="text-4xl md:text-6xl font-bold mb-4">
+          Welcome to the Committee Portal
+        </h1>
+        <p class="text-xl md:text-2xl opacity-90 mb-8">
+          {siteInfo.site_description || "Patient Participation Group"}
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a 
+            href="/reports" 
+            class="px-6 py-3 bg-white text-[#5B9085] font-semibold rounded-lg hover:shadow-lg transition-all"
+          >
+            View Reports
+          </a>
+          <a 
+            href="/members" 
+            class="px-6 py-3 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-lg hover:bg-white/30 transition-all border border-white/30"
+          >
+            Committee Members
+          </a>
+        </div>
+      </div>
+      
+      <!-- Decorative circles -->
+      <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-white/10 rounded-full"></div>
+      <div class="absolute -top-20 -left-20 w-64 h-64 bg-white/10 rounded-full"></div>
+    </div>
+
+    <!-- Quick Links Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <a 
+        href="/members"
+        class="group relative bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-[#5B9085]/20 hover:border-[#5B9085]/40 hover:-translate-y-1"
+      >
+        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-[#5B9085] to-[#529F44] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
         </div>
-        <div>
-          <h2 class="text-4xl sm:text-5xl font-bold text-[#596175] tracking-tight">Welcome to MMS PPG Committee</h2>
-          <p class="text-lg text-[#305A65]/70 mt-2">Your central repository for committee documents, agendas, and contacts.</p>
+        <h3 class="text-xl font-bold text-[#596175] mb-2 group-hover:text-[#5B9085] transition-colors">
+          Members
+        </h3>
+        <p class="text-[#305A65] text-sm">
+          View committee members and their roles
+        </p>
+      </a>
+
+      <a 
+        href="/events"
+        class="group relative bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-[#5B9085]/20 hover:border-[#5B9085]/40 hover:-translate-y-1"
+      >
+        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-[#5B9085] to-[#529F44] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
         </div>
-      </div>
+        <h3 class="text-xl font-bold text-[#596175] mb-2 group-hover:text-[#5B9085] transition-colors">
+          Events
+        </h3>
+        <p class="text-[#305A65] text-sm">
+          Upcoming meetings and activities
+        </p>
+      </a>
+
+      <a 
+        href="/agendas"
+        class="group relative bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-[#5B9085]/20 hover:border-[#5B9085]/40 hover:-translate-y-1"
+      >
+        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-[#5B9085] to-[#529F44] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-[#596175] mb-2 group-hover:text-[#5B9085] transition-colors">
+          Agendas
+        </h3>
+        <p class="text-[#305A65] text-sm">
+          Meeting agendas and minutes
+        </p>
+      </a>
+
+      <a 
+        href="/contacts"
+        class="group relative bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-[#5B9085]/20 hover:border-[#5B9085]/40 hover:-translate-y-1"
+      >
+        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-[#5B9085] to-[#529F44] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-[#596175] mb-2 group-hover:text-[#5B9085] transition-colors">
+          Contacts
+        </h3>
+        <p class="text-[#305A65] text-sm">
+          Get in touch with committee contacts
+        </p>
+      </a>
     </div>
 
-    <!-- Main Content -->
-    <div class="space-y-6 max-w-3xl text-[#305A65]">
-      <p class="text-base sm:text-lg leading-relaxed">
-        Here you can access all key documents, meeting agendas, and contact information for committee members. The site is designed to help you stay informed and collaborate effectively.
+    <!-- Info Section -->
+    <div class="bg-white rounded-xl p-8 shadow-md border border-[#5B9085]/20">
+      <h2 class="text-2xl font-bold text-[#596175] mb-4">About This Portal</h2>
+      <p class="text-[#305A65] leading-relaxed mb-4">
+        This secure portal provides committee members with access to important documents, 
+        meeting information, and communication tools. All content is regularly updated 
+        and accessible only to authorized members.
       </p>
-      <p class="text-base sm:text-lg leading-relaxed">
-        Use the navigation menu to browse different sections or search for specific information. Make sure to check for updates regularly to stay up to date with the latest committee activities.
-      </p>
+      <div class="flex items-center gap-2 text-sm text-[#5B9085]">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+        <span class="font-medium">Secure & Authenticated Access</span>
+      </div>
     </div>
   </div>
 </BaseLayout>

@@ -24,7 +24,11 @@ const contacts = await getContacts();
     ) : (
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {contacts.map((contact, index) => {
-          const orgName = contact.organisation_id?.organisation_name || 'Independent';
+          // Handle organization name - check different possible structures
+          const orgName = contact.organisation_id?.organisation_name || 
+                         contact.organisation_id || 
+                         'Independent';
+          console.log('Contact org data:', contact.organisation_id);
           return (
             <div 
               key={contact.id} 

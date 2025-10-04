@@ -8,14 +8,25 @@ let error = null;
 try {
   members = await getMembers();
   console.log("Members data:", JSON.stringify(members, null, 2));
+  console.log("Members count:", members.length);
+  
+  // Check first member structure if exists
+  if (members.length > 0) {
+    console.log("First member:", JSON.stringify(members[0], null, 2));
+  }
 } catch (e) {
   error = e.message;
   console.error("Error loading members:", e);
 }
 
-// Group members by role
+// Group members by role with safety checks
 const membersByRole = members.reduce((acc, member) => {
-  const role = member.committee_role_id?.committee_role || 'Other Members';
+  if (!member) return acc;
+  
+  // Try different possible field structures
+  const role = member.committee_role_id?.committee_role || 
+               member.committee_role_id || 
+               'Other Members';
   if (!acc[role]) {
     acc[role] = [];
   }
@@ -52,7 +63,12 @@ const sortedRoles = Object.keys(membersByRole).sort((a, b) => {
       </div>
     </div>
 
-    {members.length === 0 ? (
+    {error ? (
+      <div class="relative overflow-hidden rounded-3xl bg-red-50 p-12 text-center border border-red-200">
+        <p class="text-red-600 font-semibold mb-2">Error loading members</p>
+        <p class="text-red-500 text-sm">{error}</p>
+      </div>
+    ) : members.length === 0 ? (
       <div class="flex flex-col items-center justify-center py-20 px-4">
         <div class="w-20 h-20 bg-[#5B9085]/10 rounded-full flex items-center justify-center mb-6">
           <svg class="w-10 h-10 text-[#5B9085]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,14 +108,14 @@ const sortedRoles = Object.keys(membersByRole).sort((a, b) => {
                   <!-- Avatar -->
                   <div class="relative mb-4">
                     <div class="w-14 h-14 rounded-full bg-gradient-to-br from-[#5B9085] to-[#529F44] flex items-center justify-center text-white text-lg font-bold shadow-md group-hover:scale-110 transition-transform duration-300">
-                      {member.first_name[0]}{member.last_name[0]}
+                      {member.firstname?.[0] || 'M'}{member.lastname?.[0] || 'M'}
                     </div>
                     <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-[#529F44] rounded-full border-2 border-white"></div>
                   </div>
 
                   <!-- Name -->
                   <h4 class="text-lg font-bold text-[#596175] group-hover:text-[#5B9085] transition-colors mb-1">
-                    {member.first_name} {member.last_name}
+                    {member.firstname || ''} {member.lastname || ''}
                   </h4>
 
                   <!-- Role badge -->

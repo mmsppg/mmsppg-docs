@@ -23,10 +23,8 @@ async function getAuthorizedEmails(): Promise<string[]> {
     // Fetch members from Directus
     const members = await directus.request(
       readItems('members', {
-        fields: ['email'], // Add an 'email' field to your members collection
-        filter: {
-          status: { _eq: 'active' } // Optional: only get active members
-        }
+        fields: ['email']
+        // No status filter - all members can log in
       })
     );
 

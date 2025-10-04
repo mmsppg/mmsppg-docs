@@ -1,4 +1,4 @@
-import { createDirectus, rest, readItems, staticToken } from '@directus/sdk';
+import { createDirectus, rest, readItems, staticToken, readItem } from '@directus/sdk';
 
 const directus = createDirectus(import.meta.env.DIRECTUS_URL)
   .with(rest())
@@ -7,7 +7,8 @@ const directus = createDirectus(import.meta.env.DIRECTUS_URL)
 export async function getEvents() {
   const response = await directus.request(
     readItems('events', {
-      fields: ['id', 'title', 'date', 'location', 'description']
+      fields: ['id', 'title', 'date', 'location', 'description'],
+      sort: ['date']
     })
   );
   console.log("Events response:", JSON.stringify(response, null, 2));
@@ -27,7 +28,7 @@ export async function getAgendas() {
         'agenda_items.topic',
         'agenda_items.description'
       ],
-      sort: ['-meeting_date'] // Most recent first
+      sort: ['-meeting_date']
     })
   );
   console.log("Agendas response:", JSON.stringify(response, null, 2));
@@ -35,20 +36,25 @@ export async function getAgendas() {
 }
 
 export async function getContacts() {
-  const response = await directus.request(
-    readItems('contacts', {
-      fields: [
-        'id',
-        'first_name',
-        'last_name',
-        'email_address',
-        'role',
-        'organisation_id.organisation_name'
-      ]
-    })
-  );
-  console.log("Contacts response:", JSON.stringify(response, null, 2));
-  return response;
+  try {
+    const response = await directus.request(
+      readItems('contacts', {
+        fields: [
+          'id',
+          'first_name',
+          'last_name',
+          'email_address',
+          'role',
+          { 'organisation_id': ['organisation_name', 'id'] }
+        ]
+      })
+    );
+    console.log("Contacts response:", JSON.stringify(response, null, 2));
+    return response;
+  } catch (error) {
+    console.error("Error fetching contacts:", error);
+    return [];
+  }
 }
 
 export async function getMembers() {
@@ -57,12 +63,14 @@ export async function getMembers() {
       readItems('members', {
         fields: [
           'id',
-          'first_name',
-          'last_name',
-          'committee_role_id.committee_role',
-          'committee_role_id.id'
+          'firstname',
+          'lastname',
+          'email',
+          'status',
+          { 'committee_role_id': ['committee_role', 'id'] }
         ],
-        sort: ['last_name']
+        // Remove status filter to see all members
+        sort: ['lastname']
       })
     );
     console.log("Members response:", JSON.stringify(response, null, 2));
@@ -82,3 +90,113 @@ export async function getGlobals() {
   console.log("Globals response:", JSON.stringify(response, null, 2));
   return response;
 }
+
+// Reports functions
+export async function getReports() {
+  try {
+    const response = await directus.request(
+      readItems('reports', {
+        fields: [
+          'id',
+          'title',
+          'date',
+          'content',
+          'slug',
+          'status',
+          { 'author': ['id', 'firstname', 'lastname'] }
+        ],
+        filter: {
+          status: { _eq: 'published' }
+        },
+        sort: ['-date']
+      })
+    );
+    console.log("Reports response:", JSON.stringify(response, null, 2));
+    return response || [];
+  } catch (error) {
+    console.error("Error fetching reports:", error);
+    return [];
+  }
+}
+
+export async function getReport(slug: string) {
+  try {
+    const response = await directus.request(
+      readItems('reports', {
+        fields: [
+          'id',
+          'title',
+          'date',
+          'content',
+          'slug',
+          { 'author': ['id', 'firstname', 'lastname'] }
+        ],
+        filter: {
+          slug: { _eq: slug },
+          status: { _eq: 'published' }
+        },
+        limit: 1
+      })
+    );
+    console.log("Report response:", JSON.stringify(response, null, 2));
+    return response[0];
+  } catch (error) {
+    console.error("Error fetching report:", error);
+    return null;
+  }
+}
+
+// Documentation functions
+export async function getDocumentation(category?: string) {
+  try {
+    const filter: any = {};
+    if (category) {
+      filter.category = { _eq: category };
+    }
+
+    const response = await directus.request(
+      readItems('documentation', {
+        fields: [
+          'id',
+          'category',
+          'title',
+          'content',
+          'order',
+          'last_updated',
+          { 'updated_by': ['firstname', 'lastname'] }
+        ],
+        filter,
+        sort: ['order', 'title']
+      })
+    );
+    console.log("Documentation response:", JSON.stringify(response, null, 2));
+    return response || [];
+  } catch (error) {
+    console.error("Error fetching documentation:", error);
+    return [];
+  }
+}
+
+export async function getDocumentationById(id: string) {
+  try {
+    const response = await directus.request(
+      readItem('documentation', id, {
+        fields: [
+          'id',
+          'category',
+          'title',
+          'content',
+          'last_updated',
+          { 'updated_by': ['firstname', 'lastname'] }
+        ]
+      })
+    );
+    console.log("Documentation item response:", JSON.stringify(response, null, 2));
+    return response;
+  } catch (error) {
+    console.error("Error fetching documentation item:", error);
+    return null;
+  }
+}
+
+export { directus };
