@@ -106,65 +106,13 @@ export async function getGlobals() {
   return response;
 }
 
-// Reports functions
-export async function getReports() {
-  try {
-    const response = await directus.request(
-      readItems('reports', {
-        fields: [
-          'id',
-          'title',
-          'date',
-          'content',
-          'slug',
-          'status',
-          { 'author': ['id', 'firstname', 'lastname'] }
-        ],
-        filter: {
-          status: { _eq: 'published' }
-        },
-        sort: ['-date']
-      })
-    );
-    console.log("Reports response:", JSON.stringify(response, null, 2));
-    return response || [];
-  } catch (error) {
-    console.error("Error fetching reports:", error);
-    return [];
-  }
-}
-
-export async function getReport(slug: string) {
-  try {
-    const response = await directus.request(
-      readItems('reports', {
-        fields: [
-          'id',
-          'title',
-          'date',
-          'content',
-          'slug',
-          { 'author': ['id', 'firstname', 'lastname'] }
-        ],
-        filter: {
-          slug: { _eq: slug },
-          status: { _eq: 'published' }
-        },
-        limit: 1
-      })
-    );
-    console.log("Report response:", JSON.stringify(response, null, 2));
-    return response[0];
-  } catch (error) {
-    console.error("Error fetching report:", error);
-    return null;
-  }
-}
-
-// Documentation functions
+// Documentation/Reports unified functions
 export async function getDocumentation(category?: string) {
   try {
-    const filter: any = {};
+    const filter: any = {
+      status: { _eq: 'published' }
+    };
+    
     if (category) {
       filter.category = { _eq: category };
     }
@@ -173,15 +121,17 @@ export async function getDocumentation(category?: string) {
       readItems('documentation', {
         fields: [
           'id',
-          'category',
           'title',
+          'date',
           'content',
+          'category',
+          'slug',
           'order',
           'last_updated',
-          { 'updated_by': ['firstname', 'lastname'] }
+          { 'author': ['firstname', 'lastname'] }
         ],
         filter,
-        sort: ['order', 'title']
+        sort: category ? ['order', '-date', 'title'] : ['-date', 'title']
       })
     );
     console.log("Documentation response:", JSON.stringify(response, null, 2));
@@ -192,26 +142,42 @@ export async function getDocumentation(category?: string) {
   }
 }
 
-export async function getDocumentationById(id: string) {
+export async function getDocumentationBySlug(slug: string) {
   try {
     const response = await directus.request(
-      readItem('documentation', id, {
+      readItems('documentation', {
         fields: [
           'id',
-          'category',
           'title',
+          'date',
           'content',
+          'category',
+          'slug',
           'last_updated',
-          { 'updated_by': ['firstname', 'lastname'] }
-        ]
+          { 'author': ['firstname', 'lastname'] }
+        ],
+        filter: {
+          slug: { _eq: slug },
+          status: { _eq: 'published' }
+        },
+        limit: 1
       })
     );
     console.log("Documentation item response:", JSON.stringify(response, null, 2));
-    return response;
+    return response[0];
   } catch (error) {
     console.error("Error fetching documentation item:", error);
     return null;
   }
+}
+
+// Helper to get just reports (for backwards compatibility)
+export async function getReports() {
+  return getDocumentation('Reports');
+}
+
+export async function getReport(slug: string) {
+  return getDocumentationBySlug(slug);
 }
 
 export { directus };
