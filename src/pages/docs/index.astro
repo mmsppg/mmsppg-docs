@@ -1,0 +1,275 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getDocumentation } from '../../lib/directus';
+
+let allDocs = [];
+let error = null;
+
+try {
+  allDocs = await getDocumentation(); // Get all published docs
+} catch (e) {
+  error = e.message;
+  console.error("Error loading documentation:", e);
+}
+
+// Group by category
+const categories = ['Reports', 'Branding', 'Technical', 'Processes', 'Guidelines'];
+const docsByCategory = categories.reduce((acc, cat) => {
+  acc[cat] = allDocs.filter(doc => doc.category === cat);
+  return acc;
+}, {} as Record<string, any[]>);
+
+// Get recent docs (last 30 days)
+const thirtyDaysAgo = new Date();
+thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+const recentDocs = allDocs
+  .filter(doc => doc.date && new Date(doc.date) >= thirtyDaysAgo)
+  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  .slice(0, 5);
+
+function formatDate(dateString: string) {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', { 
+      day: 'numeric', 
+      month: 'short', 
+      year: 'numeric' 
+    });
+  } catch {
+    return dateString;
+  }
+}
+
+const categoryIcons = {
+  'Reports': 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+  'Branding': 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01',
+  'Technical': 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4',
+  'Processes': 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
+  'Guidelines': 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'
+};
+---
+
+<BaseLayout>
+  <div class="relative">
+    <!-- Header -->
+    <div class="relative mb-12 pb-8 border-b-2 border-[#5B9085]/20">
+      <div class="absolute inset-0 bg-gradient-to-r from-[#5B9085]/5 to-[#529F44]/5 rounded-2xl -z-10"></div>
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#5B9085] to-[#529F44] flex items-center justify-center shadow-lg">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-5xl font-bold text-[#596175] tracking-tight">Documentation</h2>
+          <p class="text-lg text-[#305A65]/70 mt-2">Committee resources and information</p>
+        </div>
+      </div>
+    </div>
+
+    {error ? (
+      <div class="p-8 bg-red-50 border border-red-200 rounded-lg text-red-600">
+        Error loading documentation: {error}
+      </div>
+    ) : (
+      <div>
+        <!-- Search Bar -->
+        <div class="mb-8">
+          <div class="relative">
+            <input
+              type="text"
+              id="search-input"
+              placeholder="Search documentation..."
+              class="w-full px-6 py-4 pl-14 rounded-xl border-2 border-[#5B9085]/20 focus:border-[#5B9085] focus:outline-none text-lg"
+            />
+            <svg class="absolute left-5 top-5 w-6 h-6 text-[#5B9085]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Recent Documents -->
+        {recentDocs.length > 0 && (
+          <div class="mb-12">
+            <h3 class="text-2xl font-bold text-[#596175] mb-6">Recent Updates</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {recentDocs.map(doc => (
+                <a
+                  href={`/docs/${doc.slug}`}
+                  class="group p-4 bg-white rounded-lg border border-[#5B9085]/20 hover:border-[#5B9085]/40 hover:shadow-md transition-all"
+                >
+                  <div class="flex items-start justify-between mb-2">
+                    <span class="text-xs font-semibold text-[#5B9085] bg-[#5B9085]/10 px-2 py-1 rounded">
+                      {doc.category}
+                    </span>
+                    <span class="text-xs text-[#305A65]/70">{formatDate(doc.date)}</span>
+                  </div>
+                  <h4 class="font-bold text-[#596175] group-hover:text-[#5B9085] transition-colors line-clamp-2">
+                    {doc.title}
+                  </h4>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <!-- Category Tabs -->
+        <div class="mb-6">
+          <div class="flex flex-wrap gap-2 border-b border-[#596175]/10 pb-4">
+            <button
+              class="category-tab active px-4 py-2 rounded-lg font-semibold transition-all"
+              data-category="all"
+            >
+              All
+            </button>
+            {categories.map(cat => (
+              <button
+                class="category-tab px-4 py-2 rounded-lg font-semibold transition-all"
+                data-category={cat}
+              >
+                {cat} ({docsByCategory[cat].length})
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <!-- Documents by Category -->
+        <div id="docs-container">
+          {categories.map(category => (
+            <div class="category-section mb-12" data-category={category}>
+              {docsByCategory[category].length > 0 && (
+                <>
+                  <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-[#5B9085] to-[#529F44] flex items-center justify-center">
+                      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={categoryIcons[category]} />
+                      </svg>
+                    </div>
+                    <h3 class="text-3xl font-bold text-[#596175]">{category}</h3>
+                  </div>
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {docsByCategory[category].map(doc => (
+                      <a
+                        href={`/docs/${doc.slug}`}
+                        class="doc-card group relative bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-[#5B9085]/20 hover:border-[#5B9085]/40 hover:-translate-y-1"
+                        data-title={doc.title.toLowerCase()}
+                        data-category={category}
+                      >
+                        <div class="flex items-start justify-between mb-3">
+                          <h4 class="text-xl font-bold text-[#596175] group-hover:text-[#5B9085] transition-colors flex-1 pr-4">
+                            {doc.title}
+                          </h4>
+                          {doc.date && (
+                            <span class="text-sm text-[#305A65]/70 whitespace-nowrap">
+                              {formatDate(doc.date)}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {doc.content && (
+                          <p class="text-[#305A65] line-clamp-2 text-sm mb-4">
+                            {doc.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
+                          </p>
+                        )}
+
+                        <div class="flex items-center gap-2 text-[#5B9085] text-sm font-medium">
+                          <span>Read more</span>
+                          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <!-- No Results -->
+        <div id="no-results" class="hidden text-center py-20">
+          <div class="w-20 h-20 bg-[#5B9085]/10 rounded-full flex items-center justify-center mb-6 mx-auto">
+            <svg class="w-10 h-10 text-[#5B9085]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <p class="text-xl text-[#305A65] font-medium">No documents found matching your search.</p>
+        </div>
+      </div>
+    )}
+  </div>
+
+  <script>
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const categoryTabs = document.querySelectorAll('.category-tab');
+    const categorySections = document.querySelectorAll('.category-section');
+    const docCards = document.querySelectorAll('.doc-card');
+    const noResults = document.getElementById('no-results');
+
+    let activeCategory = 'all';
+    let searchTerm = '';
+
+    function filterDocs() {
+      let visibleCount = 0;
+
+      categorySections.forEach(section => {
+        const sectionCategory = section.getAttribute('data-category');
+        const shouldShowSection = activeCategory === 'all' || activeCategory === sectionCategory;
+        
+        if (shouldShowSection) {
+          const cardsInSection = section.querySelectorAll('.doc-card');
+          let sectionHasVisible = false;
+
+          cardsInSection.forEach(card => {
+            const title = card.getAttribute('data-title') || '';
+            const matchesSearch = !searchTerm || title.includes(searchTerm.toLowerCase());
+            
+            if (matchesSearch) {
+              (card as HTMLElement).style.display = 'block';
+              visibleCount++;
+              sectionHasVisible = true;
+            } else {
+              (card as HTMLElement).style.display = 'none';
+            }
+          });
+
+          (section as HTMLElement).style.display = sectionHasVisible ? 'block' : 'none';
+        } else {
+          (section as HTMLElement).style.display = 'none';
+        }
+      });
+
+      if (noResults) {
+        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+      }
+    }
+
+    // Search functionality
+    searchInput?.addEventListener('input', (e) => {
+      searchTerm = (e.target as HTMLInputElement).value;
+      filterDocs();
+    });
+
+    // Category tab functionality
+    categoryTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        categoryTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeCategory = tab.getAttribute('data-category') || 'all';
+        filterDocs();
+      });
+    });
+  </script>
+
+  <style>
+    .category-tab {
+      @apply text-[#596175] hover:bg-[#5B9085]/10;
+    }
+    
+    .category-tab.active {
+      @apply bg-gradient-to-r from-[#5B9085] to-[#529F44] text-white shadow-md;
+    }
+  </style>
+</BaseLayout>

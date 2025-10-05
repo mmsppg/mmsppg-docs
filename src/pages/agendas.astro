@@ -40,7 +40,7 @@ function formatDate(dateString: string) {
         </div>
         <div>
           <h2 class="text-5xl font-bold text-[#596175] tracking-tight">Meeting Agendas</h2>
-          <p class="text-lg text-[#305A65]/70 mt-2">Past and upcoming meeting agendas with items</p>
+          <p class="text-lg text-[#305A65]/70 mt-2">Past and upcoming meeting agendas</p>
         </div>
       </div>
     </div>
@@ -59,77 +59,54 @@ function formatDate(dateString: string) {
         <p class="text-xl text-[#305A65] font-medium">No agendas available yet.</p>
       </div>
     ) : (
-      <div class="space-y-6">
-        {agendas.map((agenda, index) => {
-          const items = agenda.agenda_items || [];
-          const sortedItems = Array.isArray(items) 
-            ? items.sort((a, b) => (a.order || 0) - (b.order || 0))
-            : [];
-
-          return (
-            <div
-              key={agenda.id}
-              class="group relative bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-[#5B9085]/20 hover:border-[#5B9085]/40 overflow-hidden"
-              style={`animation: fadeInUp 0.5s ease-out ${index * 0.1}s both;`}
-            >
-              <!-- Header -->
-              <div class="bg-gradient-to-r from-[#5B9085] to-[#529F44] p-6 text-white">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <h3 class="text-2xl font-bold mb-2">
-                      Meeting Agenda
-                    </h3>
-                    <div class="flex items-center gap-2 text-white/90">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span class="font-medium">{formatDate(agenda.meeting_date)}</span>
-                    </div>
-                  </div>
-                  
-                  {agenda.category && (
-                    <div class="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg text-sm font-semibold">
-                      {agenda.category}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <!-- Agenda Items -->
-              <div class="p-6">
-                {sortedItems.length === 0 ? (
-                  <p class="text-[#305A65] italic">No agenda items added yet.</p>
-                ) : (
-                  <div class="space-y-4">
-                    {sortedItems.map((item, itemIndex) => (
-                      <div
-                        key={item.id || itemIndex}
-                        class="flex gap-4 p-4 rounded-lg bg-[#EDF0ED] hover:bg-[#5B9085]/5 transition-colors"
-                      >
-                        <!-- Item number -->
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-[#5B9085] to-[#529F44] flex items-center justify-center text-white font-bold text-sm">
-                          {item.order || itemIndex + 1}
-                        </div>
-
-                        <!-- Item content -->
-                        <div class="flex-1">
-                          <h4 class="text-lg font-bold text-[#596175] mb-2">
-                            {item.topic || 'Untitled Item'}
-                          </h4>
-                          {item.description && (
-                            <p class="text-[#305A65] leading-relaxed">
-                              {item.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {agendas.map((agenda, index) => (
+          <a
+            href={`/agendas/${agenda.id}`}
+            key={agenda.id}
+            class="group relative bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-[#5B9085]/20 hover:border-[#5B9085]/40 hover:-translate-y-1"
+            style={`animation: fadeInUp 0.5s ease-out ${index * 0.1}s both;`}
+          >
+            <!-- Date badge -->
+            <div class="absolute top-6 right-6">
+              <div class="px-3 py-1 bg-[#5B9085]/10 rounded-full text-sm font-medium text-[#5B9085]">
+                {formatDate(agenda.meeting_date)}
               </div>
             </div>
-          );
-        })}
+
+            <!-- Content -->
+            <div class="pr-24">
+              <h3 class="text-xl font-bold text-[#596175] mb-2 group-hover:text-[#5B9085] transition-colors">
+                {agenda.title || `Meeting ${formatDate(agenda.meeting_date)}`}
+              </h3>
+
+              {agenda.category && (
+                <span class="inline-block px-2 py-1 bg-[#529F44]/10 rounded text-xs font-medium text-[#529F44] mb-3">
+                  {Array.isArray(agenda.category) ? agenda.category.join(', ') : agenda.category}
+                </span>
+              )}
+
+              {agenda.notes && (
+                <p class="text-[#305A65] text-sm line-clamp-2 mb-3">
+                  {agenda.notes}
+                </p>
+              )}
+
+              {agenda.agenda_list && Array.isArray(agenda.agenda_list) && agenda.agenda_list.length > 0 && (
+                <div class="text-sm text-[#5B9085] font-medium">
+                  {agenda.agenda_list.length} agenda {agenda.agenda_list.length === 1 ? 'item' : 'items'}
+                </div>
+              )}
+            </div>
+
+            <!-- Arrow -->
+            <div class="absolute bottom-6 right-6 w-8 h-8 rounded-full bg-[#5B9085]/10 flex items-center justify-center group-hover:bg-[#5B9085] group-hover:scale-110 transition-all">
+              <svg class="w-4 h-4 text-[#5B9085] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </a>
+        ))}
       </div>
     )}
   </div>

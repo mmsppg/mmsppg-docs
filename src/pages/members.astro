@@ -23,10 +23,14 @@ try {
 const membersByRole = members.reduce((acc, member) => {
   if (!member) return acc;
   
-  // Try different possible field structures
-  const role = member.committee_role_id?.committee_role || 
-               member.committee_role_id || 
-               'Other Members';
+  // Handle the committee_role_id which comes as an array
+  let role = 'Other Members';
+  if (Array.isArray(member.committee_role_id) && member.committee_role_id.length > 0) {
+    role = member.committee_role_id[0].committee_role || 'Other Members';
+  } else if (member.committee_role_id?.committee_role) {
+    role = member.committee_role_id.committee_role;
+  }
+  
   if (!acc[role]) {
     acc[role] = [];
   }
@@ -34,16 +38,8 @@ const membersByRole = members.reduce((acc, member) => {
   return acc;
 }, {});
 
-// Define role order for display (customize as needed)
-const roleOrder = ['Chair', 'Vice Chair', 'Secretary', 'Treasurer'];
-const sortedRoles = Object.keys(membersByRole).sort((a, b) => {
-  const aIndex = roleOrder.indexOf(a);
-  const bIndex = roleOrder.indexOf(b);
-  if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
-  if (aIndex !== -1) return -1;
-  if (bIndex !== -1) return 1;
-  return a.localeCompare(b);
-});
+// Don't filter by role order - just show all roles as they come
+const sortedRoles = Object.keys(membersByRole).sort();
 ---
 <BaseLayout>
   <div class="relative">
@@ -117,6 +113,11 @@ const sortedRoles = Object.keys(membersByRole).sort((a, b) => {
                   <h4 class="text-lg font-bold text-[#596175] group-hover:text-[#5B9085] transition-colors mb-1">
                     {member.firstname || ''} {member.lastname || ''}
                   </h4>
+
+                  <!-- Email if available -->
+                  {member.email && typeof member.email === 'string' && (
+                    <p class="text-sm text-[#305A65] mb-2">{member.email}</p>
+                  )}
 
                   <!-- Role badge -->
                   <div class="inline-block px-2 py-0.5 bg-[#529F44]/10 rounded text-xs font-medium text-[#529F44]">

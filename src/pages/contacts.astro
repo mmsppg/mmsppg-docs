@@ -1,7 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getContacts } from '../lib/directus';
+
 const contacts = await getContacts();
+
+// Get unique organizations for filter
+const organizations = [...new Set(contacts.map(c => c.organisation_id?.organisation_name).filter(Boolean))].sort();
 ---
 <BaseLayout>
   <div class="relative">
@@ -10,6 +14,31 @@ const contacts = await getContacts();
       <div class="absolute inset-0 bg-gradient-to-r from-[#5B9085]/5 to-[#529F44]/5 rounded-2xl -z-10"></div>
       <h2 class="text-5xl font-bold text-[#596175] mb-3 tracking-tight">Committee Contacts</h2>
       <p class="text-lg text-[#305A65]/70">Connect with our dedicated team members</p>
+    </div>
+
+    <!-- Search and Filter Controls -->
+    <div class="mb-8 flex flex-col md:flex-row gap-4">
+      <div class="relative flex-1">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Search by name..."
+          class="w-full px-4 py-3 pl-12 rounded-lg border-2 border-[#5B9085]/20 focus:border-[#5B9085] focus:outline-none"
+        />
+        <svg class="absolute left-4 top-3.5 w-5 h-5 text-[#5B9085]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      
+      <select
+        id="org-filter"
+        class="px-4 py-3 rounded-lg border-2 border-[#5B9085]/20 focus:border-[#5B9085] focus:outline-none bg-white"
+      >
+        <option value="">All Organizations</option>
+        {organizations.map(org => (
+          <option value={org}>{org}</option>
+        ))}
+      </select>
     </div>
 
     {contacts.length === 0 ? (
@@ -82,6 +111,35 @@ const contacts = await getContacts();
       </div>
     )}
   </div>
+
+  <script>
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const orgFilter = document.getElementById('org-filter') as HTMLSelectElement;
+    const contactCards = document.querySelectorAll('.contact-card');
+
+    function filterContacts() {
+      const searchTerm = searchInput?.value.toLowerCase() || '';
+      const selectedOrg = orgFilter?.value || '';
+      
+      contactCards.forEach(card => {
+        const cardElement = card as HTMLElement;
+        const name = cardElement.getAttribute('data-name') || '';
+        const org = cardElement.getAttribute('data-org') || '';
+        
+        const matchesSearch = !searchTerm || name.includes(searchTerm);
+        const matchesOrg = !selectedOrg || org === selectedOrg;
+        
+        if (matchesSearch && matchesOrg) {
+          cardElement.style.display = 'block';
+        } else {
+          cardElement.style.display = 'none';
+        }
+      });
+    }
+
+    searchInput?.addEventListener('input', filterContacts);
+    orgFilter?.addEventListener('change', filterContacts);
+  </script>
 </BaseLayout>
 
 <style>

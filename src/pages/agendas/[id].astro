@@ -1,0 +1,140 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getAgenda } from '../../lib/directus';
+
+const { id } = Astro.params;
+
+let agenda = null;
+let error = null;
+
+try {
+  agenda = await getAgenda(id);
+} catch (e) {
+  error = e.message;
+  console.error("Error loading agenda:", e);
+}
+
+if (!agenda && !error) {
+  return Astro.redirect('/agendas');
+}
+
+function formatDate(dateString: string) {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch {
+    return dateString;
+  }
+}
+---
+
+<BaseLayout>
+  {error ? (
+    <div class="max-w-4xl mx-auto">
+      <div class="p-8 bg-red-50 border border-red-200 rounded-lg text-red-600">
+        Error loading agenda: {error}
+      </div>
+      <a href="/agendas" class="inline-flex items-center gap-2 mt-6 text-[#5B9085] hover:text-[#529F44] transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Agendas
+      </a>
+    </div>
+  ) : agenda && (
+    <div class="max-w-4xl mx-auto">
+      <!-- Back button -->
+      <a 
+        href="/agendas" 
+        class="inline-flex items-center gap-2 mb-8 text-[#5B9085] hover:text-[#529F44] transition-colors font-medium"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Agendas
+      </a>
+
+      <!-- Agenda content -->
+      <article class="bg-white rounded-2xl shadow-lg border border-[#5B9085]/20 overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-br from-[#5B9085] to-[#529F44] p-8 md:p-12 text-white">
+          {agenda.category && (
+            <div class="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold mb-4">
+              {Array.isArray(agenda.category) ? agenda.category.join(', ') : agenda.category}
+            </div>
+          )}
+          
+          <h1 class="text-3xl md:text-5xl font-bold mb-4">
+            {agenda.title || 'Meeting Agenda'}
+          </h1>
+
+          <div class="flex items-center gap-2 text-white/90">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>{formatDate(agenda.meeting_date)}</span>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="p-8 md:p-12">
+          {agenda.notes && (
+            <div class="mb-8 p-6 bg-[#EDF0ED] rounded-lg">
+              <h2 class="text-lg font-bold text-[#596175] mb-2">Notes</h2>
+              <p class="text-[#305A65] leading-relaxed">{agenda.notes}</p>
+            </div>
+          )}
+
+          {agenda.agenda_list && Array.isArray(agenda.agenda_list) && agenda.agenda_list.length > 0 ? (
+            <div>
+              <h2 class="text-2xl font-bold text-[#596175] mb-6">Agenda Items</h2>
+              <div class="space-y-4">
+                {agenda.agenda_list.map((item, index) => (
+                  <div
+                    key={index}
+                    class="flex gap-4 p-6 rounded-xl bg-[#EDF0ED] hover:bg-[#5B9085]/5 transition-colors"
+                  >
+                    <!-- Item number -->
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#5B9085] to-[#529F44] flex items-center justify-center text-white font-bold">
+                      {index + 1}
+                    </div>
+
+                    <!-- Item content -->
+                    <div class="flex-1">
+                      <h3 class="text-lg font-bold text-[#596175] mb-2">
+                        {item}
+                      </h3>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p class="text-[#305A65] italic">No agenda items listed.</p>
+          )}
+        </div>
+
+        <!-- Footer -->
+        <div class="border-t border-[#596175]/10 p-8 bg-[#EDF0ED]/50">
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-[#305A65]">
+              Meeting scheduled for {formatDate(agenda.meeting_date)}
+            </div>
+            <a 
+              href="/agendas" 
+              class="px-4 py-2 bg-[#5B9085] text-white rounded-lg hover:bg-[#529F44] transition-colors font-medium"
+            >
+              Back to All Agendas
+            </a>
+          </div>
+        </div>
+      </article>
+    </div>
+  )}
+</BaseLayout>
