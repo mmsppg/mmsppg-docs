@@ -1,8 +1,23 @@
 import { createDirectus, rest, readItems, staticToken, readItem } from '@directus/sdk';
-
 const directus = createDirectus(import.meta.env.DIRECTUS_URL)
   .with(rest())
   .with(staticToken(import.meta.env.DIRECTUS_TOKEN));
+
+// Helper to list all collections for debugging
+export async function listCollections() {
+  try {
+    const response = await directus.request(
+      readItems('directus_collections', {
+        fields: ['collection']
+      })
+    );
+    console.log("Available collections:", response.map((c: any) => c.collection).sort());
+    return response;
+  } catch (error) {
+    console.error("Error listing collections:", error);
+    return [];
+  }
+}
 
 export async function getEvents() {
   const response = await directus.request(
@@ -35,13 +50,13 @@ export async function getAgendas() {
         sort: ['-meeting_date']
       })
     );
-    
+   
     // Transform the M2M structure - flatten the junction table
     const transformed = response.map((agenda: any) => ({
       ...agenda,
       agenda_items: agenda.agenda_items?.map((junction: any) => junction.agenda_items_id).filter(Boolean) || []
     }));
-    
+   
     console.log("Agendas transformed:", JSON.stringify(transformed, null, 2));
     return transformed || [];
   } catch (error) {
@@ -109,26 +124,24 @@ export async function getGlobals() {
 // Documentation/Reports unified functions
 export async function getDocumentation(category?: string) {
   try {
-    const filter: any = {
-      status: { _eq: 'published' }
-    };
-    
+    console.log("Fetching from collection: 'documentation'");  // Sanity log
+    const filter: any = {};  // Empty for now—no status
+
     if (category) {
       filter.category = { _eq: category };
     }
-
     const response = await directus.request(
-      readItems('documentation', {
+      readItems('documentation', {  // Update this if name differs!
         fields: [
           'id',
           'title',
           'date',
           'content',
-          'category',
-          'slug',
-          'order',
-          'last_updated',
-          { 'author': ['firstname', 'lastname'] }
+          'category',  // If you added this field
+          'slug',      // If added
+          'order',     // If added
+          'last_updated', // If added
+          'status'     // If you added this during rebuild
         ],
         filter,
         sort: category ? ['order', '-date', 'title'] : ['-date', 'title']
@@ -144,6 +157,7 @@ export async function getDocumentation(category?: string) {
 
 export async function getDocumentationBySlug(slug: string) {
   try {
+    console.log("Fetching item from collection: 'documentation'");  // Sanity
     const response = await directus.request(
       readItems('documentation', {
         fields: [
@@ -151,14 +165,14 @@ export async function getDocumentationBySlug(slug: string) {
           'title',
           'date',
           'content',
-          'category',
+          'category',    // If added
           'slug',
-          'last_updated',
-          { 'author': ['firstname', 'lastname'] }
+          'last_updated', // If added
+          'status'       // If added
         ],
         filter: {
-          slug: { _eq: slug },
-          status: { _eq: 'published' }
+          slug: { _eq: slug }
+          // No status filter for now
         },
         limit: 1
       })

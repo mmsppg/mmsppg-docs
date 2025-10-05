@@ -1,0 +1,36 @@
+---
+import { listCollections, getDocumentation } from '../lib/directus.js';  // Adjust path to your lib file
+
+// Run the debugs
+const collections = await listCollections();
+const docs = await getDocumentation();  // No category, no filter—raw fetch
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Debug: Directus Connection</title>
+  </head>
+  <body>
+    <main>
+      <h1>Directus Debug</h1>
+      
+      <section>
+        <h2>Available Collections</h2>
+        <p>Does 'documentation' show here? If not, that's the issue—update the name in code.</p>
+        <pre>{JSON.stringify(collections.map(c => c.collection), null, 2)}</pre>
+      </section>
+
+      <section>
+        <h2>Documentation Fetch Result</h2>
+        <p>Raw response from getDocumentation()—should have your test item if API connects.</p>
+        <pre>{JSON.stringify(docs, null, 2)}</pre>
+        <p><strong>Count:</strong> {docs.length} items</p>
+      </section>
+
+      <p><em>Check browser console for full logs too (e.g., "Docs meta count:", "Fetching from collection...").</em></p>
+    </main>
+  </body>
+</html>
